@@ -18,6 +18,7 @@ class Person(Base):
     last_name = Column(String(20), nullable=False)
     email = Column(String(50), primary_key=True)
     phone = Column(Integer, nullable=False)
+    birthday = Column(Integer, nullable=False)
     street_name = Column(String(250))
     street_number = Column(String(250))
     post_code = Column(Integer, nullable=False)
@@ -36,10 +37,13 @@ class Person(Base):
             "id": self.id,
             "username": self.user_name,
             "name": self.name,
+            "email": self.email,
+            "phone": self.phone,
             "lastname": self.last_name,
             "streetname": self.street_name,
             "streetnumber": self.street_number,
             "postcode": self.post_code,
+            "birthday": self.birthday,
             "country": self.country,
             "city": self.city
         }
@@ -47,50 +51,108 @@ class Person(Base):
 class PhotoAdd(Base):
         __tablename__ = 'photoadd'
         id = Column(Integer, primary_key=True)
+        images = Column(String(20), nullable=False)
         
-        
-        person = relationship(Person)
         person_id = Column(Integer, ForeignKey('person.id'))
+        person = relationship(Person)
         
         def to_dict(self):
             return {
             "id": self.id,
             "person": self.person,
-            "personID": self.person_id
+            "personID": self.person_id,
+            "images": self.images
         }
+
+class History(Base):
+        __tablename__ = 'history'
+        id = Column(Integer, primary_key=True)
+        history = Column(String(20), nullable=False)
+        vacune = Column(String(20), nullable=False)
+        person_id = Column(Integer, ForeignKey('person.id'))
+        person = relationship(Person)
         
-
-class Follower(Base):
-    __tablename__ = 'follower'
-    id = Column(Integer, primary_key=True)
-    person_id = Column(Integer, ForeignKey('person.id'))   
-    person = relationship(Person)
-
-    def to_dict(self):
-        return {
+        def to_dict(self):
+            return {
             "id": self.id,
             "person": self.person,
+            "personID": self.person_id,
+            "vacune": self.vacune,
+            "history": self.history
+        }
+
+class Pet(Base):
+    __tablename__ = 'pet'
+    # Here we define columns for the table person
+    # Notice that each column is also a normal Python instance attribute.
+    id = Column(Integer, primary_key=True)
+    name = Column(String(20), nullable=False)
+    race = Column(String(20), nullable=False)
+    gender = Column(String(50), nullable=True)
+    age = Column(Integer, nullable=False)
+    species = Column(String(250), nullable=False)
+    weight = Column(Integer, nullable=False)
+    height = Column(Integer, nullable=False)
+    birthday = Column(Integer, nullable=False)
+    person = relationship(Person)
+    person_id = Column(Integer, ForeignKey('person.id'))
+    photo_add_id = Column(Integer, ForeignKey('photoadd.id'))
+    photo_add = relationship(PhotoAdd)
+    history_id = Column(Integer, ForeignKey('history.id'))
+    history = relationship(History)
+
+    def to_dict(self):
+            return {
+            "id": self.id,
+            "name": self.name,
+            "race": self.race,
+            "gender": self.gender,
+            "age": self.age,
+            "species": self.species,
+            "weight": self.weight,
+            "height": self.height,
+            "birthday": self.birthday,
+            "photoAddID": self.photo_add_id,
+            "photoAdd": self.photo_add,
+            "historyID": self.history_id,
+            "history": self.history,
+            "person": self.person,
             "personID": self.person_id
+        }
+
+class Guess(Base):
+    __tablename__ = 'guess'
+    id = Column(Integer, primary_key=True)
+    pet = relationship(Pet)
+    pet_id = Column(Integer, ForeignKey('pet.id'))
+
+    def to_dict(self):
+            return {
+            "id": self.id,
+            "pet": self.pet,
+            "petID": self.pet_id
         }
 
 class Interaction(Base):
     __tablename__ = 'interaction'
     id = Column(Integer, primary_key=True)
     post_id = Column(Integer, ForeignKey('post.id'))
-    follower_id = Column(Integer, ForeignKey('follower.id'))
     like = Column(Integer, nullable=True)
     comment =  Column(String(250), nullable=True)
-    follower = relationship(Follower)
+    guess_id = Column(Integer, ForeignKey('guess.id'))
+    guess = relationship(Guess)
 
     def to_dict(self):
         return {
             "id": self.id,
             "postID": self.post_id,
-            "followerId": self.follower_id,
+            "guessId": self.guess_id,
             "like": self.like,
             "comment": self.comment,
-            "follower": self.follower
+            "guess": self.guess
         }
+
+
 
 class Post(Base):
         __tablename__ = 'post'
@@ -98,8 +160,10 @@ class Post(Base):
         footer_description = Column(String(250), nullable=False)
         person_id = Column(Integer, ForeignKey('person.id'))
         person = relationship(Person)
-        
         place =  Column(String(250), nullable=False)
+        date = Column(Integer, nullable=False)
+        pet = relationship(Pet)
+        pet_id = Column(Integer, ForeignKey('pet.id'))
         photo_add_id = Column(Integer, ForeignKey('photoadd.id'))
         photo_add = relationship(PhotoAdd)
         interaction_id = Column(Integer, ForeignKey('interaction.id'))
@@ -115,7 +179,9 @@ class Post(Base):
             "photoAddID": self.photo_add_id,
             "photoAdd": self.photo_add,
             "interactionID": self.interaction_id,
-            "interaction": self.interaction
+            "interaction": self.interaction,
+            "pet": self.pet,
+            "petID": self.pet_id
 
         }
 
